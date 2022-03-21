@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 style="text-align:center;">Пейзажи Марса</h1>
+                    <div id="demo" class="carousel slide" data-ride="carousel">
+
+                      <!-- Indicators -->
+                      <ul class="carousel-indicators">
+			<li data-target="#demo" data-slide-to="0" class="active"></li>
+			{% for a in names%}
+                            <li data-target="#demo" data-slide-to="{{loop.index}}"></li>
+			 {% endfor %}
+                      </ul>
+
+                      <!-- The slideshow -->
+                      <div class="carousel-inner">
+                        <div class="carousel-item active">
+                          <img src="/static/img/mars1.jpg" alt="Los Angeles">
+                        </div>
+			{% for a in names%}
+                            <div class="carousel-item">
+                              <img src="/static/img/mars{{loop.index + 1}}.jpg">
+                            </div>
+                      </div>
+
+                      <!-- Left and right controls -->
+                      <a class="carousel-control-prev" href="#demo" data-slide="prev">
+                        <span class="carousel-control-prev-icon"></span>
+                      </a>
+                      <a class="carousel-control-next" href="#demo" data-slide="next">
+                        <span class="carousel-control-next-icon"></span>
+                      </a>
+                    </div>
+{% endblock %}

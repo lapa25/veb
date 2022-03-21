@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h3>Works log</h3>
+{% for item in works%}
+<h5 style="margin-top: 20px" >Action #{{item.id}}</h5>
+<table border="2" width="800">
+  <tr bgcolor="#d58a94">
+    <td width = "400" align = "center">Title of activity</td>
+    <td width = "100" align = "center">Team leader</td>
+    <td width = "50" align = "center">Duration</td>
+    <td width = "50" align = "center">List of collaborators</td>
+   <td width = "100" align = "center">Is finished</td>
+  </tr>
+  <tr bgcolor="#488a94">
+    <td align = "center">{{item.job}}</td><td align = "center">{{item.user.name}} {{item.user.surname}}</td>
+    <td align = "center">{{item.work_size}} hours</td><td align = "center">{{item.collaborators}}</td>
+    {% if item.is_finished %}
+        <td align = "center">Is finished</td>
+    {% else %}
+       <td align = "center">Is not finished</td>
+    {% endif %}
+  </tr>
+</table>
+{% endfor %}
+{% endblock %}
