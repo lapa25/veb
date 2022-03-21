@@ -1,12 +1,17 @@
 from flask import Flask
-from flask import render_template
+from flask import render_template, redirect
 from data import db_session
 from data.jobs import Jobs
 from data.users import User
 from forms.user import RegisterForm
+from forms.login import LoginForm
+from forms.job import JobForm
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
+login_manager = LoginManager()
+login_manager.init_app(app)
 
 
 def main():
@@ -37,12 +42,53 @@ def main():
                 age=form.age.data,
                 position=form.position.data,
                 speciality=form.speciality.data,
-                address=form.address.name
+                address=form.address.data
             )
             user.set_password(form.password.data)
             db_sess.add(user)
             db_sess.commit()
         return render_template('register.html', title='Регистрация', form=form)
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        db_sess = db_session.create_session()
+        return db_sess.query(User).get(user_id)
+
+    @app.route('/login', methods=['GET', 'POST'])
+    def login():
+        form = LoginForm()
+        if form.validate_on_submit():
+            db_sess = db_session.create_session()
+            user = db_sess.query(User).filter(User.email == form.email.data).first()
+            if user and user.check_password(form.password.data):
+                login_user(user, remember=form.remember_me.data)
+                return redirect("/")
+            return render_template('login.html',
+                                   message="Неправильный логин или пароль",
+                                   form=form)
+        return render_template('login.html', title='Авторизация', form=form)
+
+    @app.route('/logout')
+    @login_required
+    def logout():
+        logout_user()
+        return redirect("/")
+
+    @app.route('/addjob', methods=['GET', 'POST'])
+    @login_required
+    def add_jobs():
+        form = JobForm()
+        if form.validate_on_submit():
+            jobs = Jobs()
+            jobs.job = form.job.data
+            jobs.team_leader = form.team_leader.data
+            jobs.work_size = form.work_size.data
+            jobs.collaborators = form.collaborators.data
+            db_sess.add(jobs)
+            db_sess.commit()
+            return redirect('/')
+        return render_template('addjob.html', title='Adding a job',
+                               form=form)
 
     app.run(port=8080, host='127.0.0.1')
 
