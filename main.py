@@ -1,5 +1,5 @@
 from flask import Flask
-from flask import render_template, redirect
+from flask import render_template, redirect, request, abort
 from data import db_session
 from data.jobs import Jobs
 from data.users import User
@@ -84,11 +84,59 @@ def main():
             jobs.team_leader = form.team_leader.data
             jobs.work_size = form.work_size.data
             jobs.collaborators = form.collaborators.data
-            db_sess.add(jobs)
+            jobs.is_finished = form.is_finished.data
+            current_user.jobs.append(jobs)
+            db_sess.merge(current_user)
             db_sess.commit()
             return redirect('/')
         return render_template('addjob.html', title='Adding a job',
                                form=form)
+
+    @app.route('/jobs/<int:id>', methods=['GET', 'POST'])
+    @login_required
+    def edit_jobs(id):
+        form = JobForm()
+        if request.method == "GET":
+            jobs = db_sess.query(Jobs).filter(Jobs.id == id,
+                                              ((Jobs.user == current_user) | (current_user.id == 1))).first()
+            if jobs:
+                form.job.data = jobs.job
+                form.team_leader.data = jobs.team_leader
+                form.work_size.data = jobs.work_size
+                form.collaborators.data = jobs.collaborators
+                form.is_finished.data = jobs.is_finished
+            else:
+                abort(404)
+        if form.validate_on_submit():
+            jobs = db_sess.query(Jobs).filter(Jobs.id == id,
+                                              ((Jobs.user == current_user) | (current_user.id == 1))).first()
+            if jobs:
+                jobs.job = form.job.data
+                jobs.team_leader = form.team_leader.data
+                jobs.work_size = form.work_size.data
+                jobs.collaborators = form.collaborators.data
+                jobs.is_finished = form.is_finished.data
+                db_sess.commit()
+                return redirect('/')
+            else:
+                abort(404)
+        return render_template('addjob.html',
+                               title='Edit Job',
+                               form=form
+                               )
+
+    @app.route('/jobs_delete/<int:id>', methods=['GET', 'POST'])
+    @login_required
+    def news_delete(id):
+        db_sess = db_session.create_session()
+        jobs = db_sess.query(Jobs).filter(Jobs.id == id,
+                                          ((Jobs.user == current_user) | (current_user.id == 1))).first()
+        if jobs:
+            db_sess.delete(jobs)
+            db_sess.commit()
+        else:
+            abort(404)
+        return redirect('/')
 
     app.run(port=8080, host='127.0.0.1')
 
