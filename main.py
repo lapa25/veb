@@ -1,14 +1,17 @@
 from flask import Flask
 from flask import render_template, redirect, request, abort
-from data import db_session
+from data import db_session, users_resource
 from data.jobs import Jobs
 from data.users import User
 from forms.user import RegisterForm
 from forms.login import LoginForm
 from forms.job import JobForm
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
+from flask import make_response, jsonify
+from flask_restful import reqparse, abort, Api, Resource
 
 app = Flask(__name__)
+api = Api(app)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -127,8 +130,7 @@ def main():
 
     @app.route('/jobs_delete/<int:id>', methods=['GET', 'POST'])
     @login_required
-    def news_delete(id):
-        db_sess = db_session.create_session()
+    def jobs_delete(id):
         jobs = db_sess.query(Jobs).filter(Jobs.id == id,
                                           ((Jobs.user == current_user) | (current_user.id == 1))).first()
         if jobs:
@@ -138,7 +140,10 @@ def main():
             abort(404)
         return redirect('/')
 
-    app.run(port=8080, host='127.0.0.1')
+    api.add_resource(users_resource.UsersListResource, '/api/v2/users')
+    api.add_resource(users_resource.UsersResource, '/api/v2/users/<int:user_id>')
+
+    app.run()
 
 
 if __name__ == '__main__':
