@@ -1,14 +1,13 @@
 from flask import Flask
 from flask import render_template, redirect, request, abort
-from data import db_session, users_resource
+from data import db_session, users_resource, jobs_resource
 from data.jobs import Jobs
 from data.users import User
 from forms.user import RegisterForm
 from forms.login import LoginForm
 from forms.job import JobForm
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
-from flask import make_response, jsonify
-from flask_restful import reqparse, abort, Api, Resource
+from flask_restful import abort, Api
 
 app = Flask(__name__)
 api = Api(app)
@@ -142,7 +141,8 @@ def main():
 
     api.add_resource(users_resource.UsersListResource, '/api/v2/users')
     api.add_resource(users_resource.UsersResource, '/api/v2/users/<int:user_id>')
-
+    api.add_resource(jobs_resource.JobsListResource, '/api/v2/jobs')
+    api.add_resource(jobs_resource.JobsResource, '/api/v2/jobs/<int:job_id>')
     app.run()
 
 
