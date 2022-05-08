@@ -13,5 +13,4 @@ class Department(SqlAlchemyBase):
                               sqlalchemy.ForeignKey("users.id"))
     members = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     email = sqlalchemy.Column(sqlalchemy.String, nullable=True)
-    user = orm.relation('User')
 

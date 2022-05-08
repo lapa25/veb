@@ -3,9 +3,11 @@ from flask import render_template, redirect, request, abort
 from data import db_session, users_resource, jobs_resource
 from data.jobs import Jobs
 from data.users import User
+from data.department import Department
 from forms.user import RegisterForm
 from forms.login import LoginForm
 from forms.job import JobForm
+from forms.department import DepartmentForm
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask_restful import abort, Api
 
@@ -138,6 +140,67 @@ def main():
         else:
             abort(404)
         return redirect('/')
+
+    @app.route('/departments')
+    def departments():
+        department = db_sess.query(Department)
+        return render_template("departments.html", departments=department)
+
+    @app.route('/adddepartment', methods=['GET', 'POST'])
+    @login_required
+    def add_department():
+        form = DepartmentForm()
+        if form.validate_on_submit():
+            department = Department()
+            department.title = form.title.data
+            department.chief = form.chief.data
+            department.members = form.members.data
+            department.email = form.email.data
+            db_sess.add(department)
+            db_sess.commit()
+            return redirect('/departments')
+        return render_template('adddepartment.html', title='Adding a department',
+                               form=form)
+
+    @app.route('/departments/<int:id>', methods=['GET', 'POST'])
+    @login_required
+    def edit_departments(id):
+        form = DepartmentForm()
+        if request.method == "GET":
+            dep = db_sess.query(Department).filter(Department.id == id).first()
+            if dep:
+                form.title.data = dep.title
+                form.chief.data = dep.chief
+                form.members.data = dep.members
+                form.email.data = dep.email
+            else:
+                abort(404)
+        if form.validate_on_submit():
+            dep = db_sess.query(Department).filter(Department.id == id).first()
+            if dep:
+                dep.title = form.title.data
+                dep.chief = form.chief.data
+                dep.members = form.members.data
+                dep.email = form.email.data
+                db_sess.commit()
+                return redirect('/departments')
+            else:
+                abort(404)
+        return render_template('adddepartment.html',
+                               title='Edit Department',
+                               form=form
+                               )
+
+    @app.route('/department_delete/<int:id>', methods=['GET', 'POST'])
+    @login_required
+    def department_delete(id):
+        dep = db_sess.query(Department).filter(Department.id == id).first()
+        if dep:
+            db_sess.delete(dep)
+            db_sess.commit()
+        else:
+            abort(404)
+        return redirect('/departments')
 
     api.add_resource(users_resource.UsersListResource, '/api/v2/users')
     api.add_resource(users_resource.UsersResource, '/api/v2/users/<int:user_id>')
