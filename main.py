@@ -4,6 +4,7 @@ from data import db_session, users_resource, jobs_resource
 from data.jobs import Jobs
 from data.users import User
 from data.department import Department
+from data.category import Category
 from forms.user import RegisterForm
 from forms.login import LoginForm
 from forms.job import JobForm
@@ -25,6 +26,7 @@ def main():
     @app.route('/')
     def index():
         work = db_sess.query(Jobs)
+        print(work)
         return render_template("works.html", works=work)
 
     @app.route('/register', methods=['GET', 'POST'])
@@ -90,6 +92,14 @@ def main():
             jobs.collaborators = form.collaborators.data
             jobs.is_finished = form.is_finished.data
             current_user.jobs.append(jobs)
+            category = Category()
+            if int(form.work_size.data) <= 24:
+                category.name = '1'
+            elif int(form.work_size.data) > 72:
+                category.name = '3'
+            else:
+                category.name = '2'
+            jobs.categories.append(category)
             db_sess.merge(current_user)
             db_sess.commit()
             return redirect('/')

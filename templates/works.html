@@ -16,11 +16,13 @@
     <td width = "100" align = "center">Team leader</td>
     <td width = "50" align = "center">Duration</td>
     <td width = "50" align = "center">List of collaborators</td>
+    <td width = "50" align = "center">Hazard category</td>
    <td width = "100" align = "center">Is finished</td>
   </tr>
   <tr bgcolor="#488a94">
     <td align = "center">{{item.job}}</td><td align = "center">{{item.user.name}} {{item.user.surname}}</td>
     <td align = "center">{{item.work_size}} hours</td><td align = "center">{{item.collaborators}}</td>
+    <td align = "center">{{item.categories[0].name}}</td>
     {% if item.is_finished %}
         <td align = "center">Is finished</td>
     {% else %}
