@@ -9,6 +9,7 @@ parser.add_argument('name', required=True)
 parser.add_argument('age', required=True, type=int)
 parser.add_argument('position', required=True)
 parser.add_argument('speciality', required=True)
+parser.add_argument('city_from', required=True)
 parser.add_argument('address', required=True)
 parser.add_argument('email', required=True)
 
@@ -27,7 +28,7 @@ class UsersResource(Resource):
         users = session.query(User).get(user_id)
         return jsonify({'users': users.to_dict(
             only=('surname', 'name', 'age', 'position',
-                  'speciality', 'address', 'email'))})
+                  'speciality', 'city_from', 'address', 'email'))})
 
     def delete(self, user_id):
         abort_if_user_not_found(user_id)
@@ -44,7 +45,7 @@ class UsersListResource(Resource):
         news = session.query(User).all()
         return jsonify({'users': [item.to_dict(
             only=('surname', 'name', 'age', 'position',
-                  'speciality', 'address', 'email')) for item in news]})
+                  'speciality', 'city_from', 'address', 'email')) for item in news]})
 
     def post(self):
         args = parser.parse_args()
@@ -55,6 +56,7 @@ class UsersListResource(Resource):
             age=args['age'],
             position=args['position'],
             speciality=args['speciality'],
+            city_from=request.json['city_from'],
             address=args['address'],
             email=args['email']
         )

@@ -18,7 +18,7 @@ def get_users():
         {
             'users':
                 [item.to_dict(only=('surname', 'name', 'age', 'position',
-                                    'speciality', 'address', 'email'))
+                                    'speciality', 'city_from', 'address', 'email'))
                  for item in users]
         }
     )
@@ -33,7 +33,7 @@ def get_one_news(user_id):
     return jsonify(
         {
             'users': users.to_dict(only=('surname', 'name', 'age', 'position',
-                                         'speciality', 'address', 'email'
+                                         'speciality', 'city_from', 'address', 'email'
                                          ))
         }
     )
@@ -46,7 +46,7 @@ def create_users():
         return jsonify({'error': 'Empty request'})
     elif not all(key in request.json for key in
                  ['surname', 'name', 'age', 'position',
-                  'speciality', 'address', 'email']):
+                  'speciality', 'city_from', 'address', 'email']):
         return jsonify({'error': 'Bad request'})
     users = User(
         surname=request.json['surname'],
@@ -54,6 +54,7 @@ def create_users():
         age=request.json['age'],
         position=request.json['position'],
         speciality=request.json['speciality'],
+        city_from=request.json['city_from'],
         address=request.json['address'],
         email=request.json['email']
     )
@@ -91,6 +92,8 @@ def edit_jobs(user_id):
         users.position = request.json['position']
     if 'speciality' in request.json:
         users.speciality = request.json['speciality']
+    if 'city_from' in request.json:
+        users.speciality = request.json['city_from']
     if 'email' in request.json:
         users.email = request.json['email']
     if 'address' in request.json:

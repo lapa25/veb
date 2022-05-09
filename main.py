@@ -11,6 +11,7 @@ from forms.job import JobForm
 from forms.department import DepartmentForm
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask_restful import abort, Api
+import requests
 
 app = Flask(__name__)
 api = Api(app)
@@ -26,7 +27,6 @@ def main():
     @app.route('/')
     def index():
         work = db_sess.query(Jobs)
-        print(work)
         return render_template("works.html", works=work)
 
     @app.route('/register', methods=['GET', 'POST'])
@@ -48,6 +48,7 @@ def main():
                 age=form.age.data,
                 position=form.position.data,
                 speciality=form.speciality.data,
+                city_from=form.city_from.data,
                 address=form.address.data
             )
             user.set_password(form.password.data)
@@ -210,7 +211,36 @@ def main():
             db_sess.commit()
         else:
             abort(404)
-        return redirect('/departments')
+        return redirect('/users_show')
+
+    @app.route('/users_show/<int:user_id>', methods=['GET', 'POST'])
+    def users_show(user_id):
+        user = db_sess.query(User).filter(User.id == user_id).first()
+
+        adress = user.city_from
+        geocoder_request_1 = "http://geocode-maps.yandex.ru/1.x/" \
+                             "?apikey=40d1649f-0493-4b70-98ba-98533de7710b&geocode=" + adress + ", 1&format=json"
+        response_1 = requests.get(geocoder_request_1)
+        json_response_1 = response_1.json()
+        toponym_1 = json_response_1["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]
+        toponym_coodrinates = ','.join(toponym_1["Point"]["pos"].split(' '))
+        map_api_server = "http://static-maps.yandex.ru/1.x/"
+        map_params = {
+            "ll": toponym_coodrinates,
+            "l": "sat",
+            "spn": "0.02,0.02"
+        }
+        response3 = requests.get(map_api_server, params=map_params)
+        with open("static/img/map.png", "wb") as file:
+            file.write(response3.content)
+            file.close()
+
+        return render_template('users_show.html',
+                               title='Hometown',
+                               pers=user
+                               )
+
+
 
     api.add_resource(users_resource.UsersListResource, '/api/v2/users')
     api.add_resource(users_resource.UsersResource, '/api/v2/users/<int:user_id>')
